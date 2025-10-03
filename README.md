@@ -16,8 +16,7 @@ A comprehensive college assistant application built with React frontend, Node.js
 
 Watch our comprehensive demo showcasing the College Assistant's features:
 
-[![College Assistant Demo](https://img.shields.io/badge/▶️_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/Vasu-Devs/HackManthon2025/blob/main/Screen%20Recording%202025-09-27%20063342.mp4)
-
+[![Watch the demo](https://img.youtube.com/vi/n8PQeQOOO1o/0.jpg)](https://youtu.be/n8PQeQOOO1o)
 ### 🎬 What's Covered in the Demo:
 - **🔐 Authentication Flow** - Student and admin login systems with role-based access
 - **💬 AI Chat Interface** - Real-time streaming responses with document retrieval context
