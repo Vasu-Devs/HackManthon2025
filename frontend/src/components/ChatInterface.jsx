@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+// import { fastAPIService, streamUtils } from "../services/api.js";
 import sendIcon from "../../icons/send.svg";
 import voiceIcon from "../../icons/voice_mode.svg";
 import dexterIcon from "../../icons/dexter.svg";
@@ -154,8 +155,8 @@ const ChatInterface = () => {
           }
         }
       }
-    } catch (err) {
-      console.error("Chat error:", err);
+    } catch (error) {
+      console.error("Chat error:", error);
       setMessages((prev) =>
         prev.map((m, i) =>
           i === botIndex ? { ...m, text: "⚠️ Error connecting to backend." } : m

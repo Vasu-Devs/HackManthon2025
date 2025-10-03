@@ -17,8 +17,6 @@ import {
 } from "lucide-react";
 import Dashboard from "./Dashboard";
 
-const API_BASE = "http://127.0.0.1:8000";
-
 export default function DashboardLayout() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -38,6 +36,7 @@ export default function DashboardLayout() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [chunkInfo, setChunkInfo] = useState({ processed: 0, total: 0 });
   const inputRef = useRef(null);
 
   // Handle file select
@@ -47,6 +46,7 @@ export default function DashboardLayout() {
       setSelectedFile(file);
       setProgress(0);
       setCompleted(false);
+      setChunkInfo({ processed: 0, total: 0 });
     } else {
       alert("Only PDF files are allowed!");
     }
@@ -60,6 +60,7 @@ export default function DashboardLayout() {
       setSelectedFile(file);
       setProgress(0);
       setCompleted(false);
+      setChunkInfo({ processed: 0, total: 0 });
     } else {
       alert("Only PDF files are allowed!");
     }
@@ -69,13 +70,14 @@ export default function DashboardLayout() {
   const handleUpload = async () => {
     if (!selectedFile) return;
     setUploading(true);
-    setProgress(10);
+    setProgress(0);
+    setChunkInfo({ processed: 0, total: 0 });
 
     try {
       const form = new FormData();
       form.append("file", selectedFile);
 
-      const res = await fetch(`${API_BASE}/upload_pdf_async`, {
+      const res = await fetch("http://127.0.0.1:8000/upload_pdf_async", {
         method: "POST",
         body: form,
       });
@@ -90,7 +92,9 @@ export default function DashboardLayout() {
       // Start polling for status
       const poll = setInterval(async () => {
         try {
-          const statusRes = await fetch(`${API_BASE}/upload_status/${upload_id}`);
+          const statusRes = await fetch(
+            `http://127.0.0.1:8000/upload_status/${upload_id}`
+          );
           if (!statusRes.ok) {
             throw new Error("Status check failed");
           }
@@ -98,7 +102,14 @@ export default function DashboardLayout() {
           const status = await statusRes.json();
 
           if (status.status === "processing") {
-            setProgress((prev) => Math.min(prev + 15, 85));
+            const pct = Math.round(
+              (status.processed_chunks / status.total_chunks) * 100
+            );
+            setProgress(pct);
+            setChunkInfo({
+              processed: status.processed_chunks,
+              total: status.total_chunks,
+            });
           }
 
           if (status.status === "completed") {
@@ -106,12 +117,17 @@ export default function DashboardLayout() {
             setProgress(100);
             setUploading(false);
             setCompleted(true);
+            setChunkInfo({
+              processed: status.num_chunks,
+              total: status.num_chunks,
+            });
 
             // Reset UI after 2s
             setTimeout(() => {
               setSelectedFile(null);
               setCompleted(false);
               setProgress(0);
+              setChunkInfo({ processed: 0, total: 0 });
             }, 2000);
           }
 
@@ -126,7 +142,7 @@ export default function DashboardLayout() {
           clearInterval(poll);
           setUploading(false);
         }
-      }, 2000); // poll every 2s
+      }, 500); // poll every 0.5s
     } catch (err) {
       console.error("Upload error:", err);
       setUploading(false);
@@ -146,7 +162,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await fetch(`${API_BASE}/logs`);
+        const res = await fetch("http://127.0.0.1:8000/logs");
         const data = await res.json();
         if (data.logs) {
           const latestFive = data.logs.slice(-5).reverse();
@@ -362,7 +378,8 @@ export default function DashboardLayout() {
                         />
                       </div>
                       <p className="mt-2 text-sm text-gray-600">
-                        Uploading... {progress}%
+                        Uploading... {progress}% ({chunkInfo.processed}/
+                        {chunkInfo.total} chunks)
                       </p>
                     </div>
                   )}
@@ -398,19 +415,27 @@ export default function DashboardLayout() {
           <div className="space-y-6">
             <Dashboard />
 
-            {/* Recent Activity Logs */}
+            {/* Recent Activity Logs (optional, kept as in your code) */}
             {/* <div className="bg-black text-green-400 font-mono p-4 rounded-lg shadow-inner">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Recent Activity
               </h3>
               <ul className="space-y-2 max-h-64 overflow-y-auto text-sm">
                 {recentActivities.length > 0 ? (
-                  recentActivities.map((log, idx) => {
+                  recentActivities.map((activity, idx) => {
+                    const message = activity.message || activity;
+                    const time = activity.time || "";
                     let dotColor = "bg-gray-400";
-                    if (log.includes("[INFO]")) dotColor = "bg-green-500";
-                    if (log.includes("[ERROR]")) dotColor = "bg-red-500";
-                    if (log.includes("[WARN]")) dotColor = "bg-yellow-500";
-
+                    if (typeof message === "string") {
+                      if (message.includes("💬")) dotColor = "bg-blue-500";
+                      if (message.includes("📤") || message.includes("✅"))
+                        dotColor = "bg-green-500";
+                      if (message.includes("🗑️")) dotColor = "bg-red-500";
+                      if (message.includes("🛠️")) dotColor = "bg-yellow-500";
+                      if (message.includes("[INFO]")) dotColor = "bg-green-500";
+                      if (message.includes("[ERROR]")) dotColor = "bg-red-500";
+                      if (message.includes("[WARN]")) dotColor = "bg-yellow-500";
+                    }
                     return (
                       <li
                         key={idx}
@@ -419,7 +444,14 @@ export default function DashboardLayout() {
                         <span
                           className={`w-2 h-2 rounded-full ${dotColor}`}
                         ></span>
-                        <span className="text-gray-200">{log}</span>
+                        <div className="flex-1">
+                          <span className="text-gray-200">{message}</span>
+                          {time && (
+                            <span className="text-gray-500 text-xs ml-2">
+                              {time}
+                            </span>
+                          )}
+                        </div>
                       </li>
                     );
                   })

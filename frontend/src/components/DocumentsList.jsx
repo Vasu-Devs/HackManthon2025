@@ -1,6 +1,7 @@
 // src/components/DocumentsList.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fastAPIService, uploadUtils } from "../services/api.js";
 import {
   User,
   LogOut,
@@ -12,28 +13,28 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  Shield,
+  Upload,
 } from "lucide-react";
 
 const DocumentsList = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
   const navigate = useNavigate();
-
-  const API_BASE = "http://127.0.0.1:8000";
 
   // Fetch documents from backend
   const fetchDocuments = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE}/documents`, {
+      const response = await fetch("http://127.0.0.1:8000/documents", {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       if (response.ok) {
         const data = await response.json();
-        // Add some extra info for UI (size, date, etc.)
         const enhanced = data.map((doc, idx) => ({
           id: idx + 1,
           name: doc.name,
@@ -55,7 +56,6 @@ const DocumentsList = () => {
 
   useEffect(() => {
     fetchDocuments();
-    // auto refresh every 5s
     const interval = setInterval(fetchDocuments, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -80,29 +80,31 @@ const DocumentsList = () => {
     navigate("/analytics");
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".profile-dropdown")) {
         setShowProfileDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Delete document function (removes from vector DB via backend)
+  // Delete document
   const handleDelete = async (filename) => {
     if (window.confirm(`Are you sure you want to delete ${filename}?`)) {
       try {
         const token = localStorage.getItem("authToken");
-        const response = await fetch(`${API_BASE}/delete_doc/${filename}`, {
-          method: "DELETE",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/delete_doc/${filename}`,
+          {
+            method: "DELETE",
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
         if (response.ok) {
           setDocuments((prev) => prev.filter((doc) => doc.name !== filename));
         } else {
@@ -115,7 +117,35 @@ const DocumentsList = () => {
     }
   };
 
-  // Get status badge
+  // Approve document
+  const handleApprove = async (filename) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        `http://127.0.0.1:8000/approve_doc/${filename}`,
+        {
+          method: "POST",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+      if (response.ok) {
+        setDocuments((prev) =>
+          prev.map((doc) =>
+            doc.name === filename ? { ...doc, status: "verified" } : doc
+          )
+        );
+      } else {
+        alert("Failed to approve document");
+      }
+    } catch (error) {
+      console.error("Error approving document:", error);
+      alert("Error approving document");
+    }
+  };
+
+  // Status badges
   const getStatusBadge = (status) => {
     switch (status) {
       case "verified":
@@ -155,70 +185,95 @@ const DocumentsList = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Document Management
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage all uploaded policy documents and files
-            </p>
-          </div>
+      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Document Management
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Manage all uploaded policy documents and files
+          </p>
+        </div>
 
-          {/* Profile Dropdown */}
-          <div className="relative profile-dropdown">
-            <button
-              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              className="flex items-center gap-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <User size={18} className="text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-900">
-                  {localStorage.getItem("userRegNo") || "Admin"}
-                </div>
-                <div className="text-xs text-gray-500">Administrator</div>
-              </div>
-            </button>
+        {/* Upload button */}
+        <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <Upload size={16} />
+          <span>Upload PDF</span>
+          <input
+            type="file"
+            accept="application/pdf"
+            hidden
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              try {
+                await uploadUtils.uploadWithProgress(file, (s) => {
+                  setUploadProgress((prev) => ({
+                    ...prev,
+                    [file.name]: s.progress,
+                  }));
+                });
+                fetchDocuments();
+              } catch (err) {
+                console.error(err);
+                alert(`❌ Upload failed: ${err.message}`);
+              }
+            }}
+          />
+        </label>
 
-            {showProfileDropdown && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px] z-50">
-                <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
-                  {localStorage.getItem("userRegNo") || "Admin"}
-                </div>
-                <button
-                  onClick={handleGoToDashboard}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                >
-                  <LayoutDashboard size={16} />
-                  Go to Dashboard
-                </button>
-                <button
-                  onClick={handleGoToAnalytics}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                >
-                  <FileText size={16} />
-                  Go to Analytics
-                </button>
-                <button
-                  onClick={handleGoToChat}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                >
-                  <MessageCircle size={16} />
-                  Go to Chat
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-                >
-                  <LogOut size={16} />
-                  Sign out
-                </button>
+        {/* Profile Dropdown */}
+        <div className="relative profile-dropdown">
+          <button
+            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            className="flex items-center gap-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+              <User size={18} className="text-white" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-medium text-gray-900">
+                {localStorage.getItem("userRegNo") || "Admin"}
               </div>
-            )}
-          </div>
+              <div className="text-xs text-gray-500">Administrator</div>
+            </div>
+          </button>
+
+          {showProfileDropdown && (
+            <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px] z-50">
+              <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
+                {localStorage.getItem("userRegNo") || "Admin"}
+              </div>
+              <button
+                onClick={handleGoToDashboard}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              >
+                <LayoutDashboard size={16} />
+                Go to Dashboard
+              </button>
+              <button
+                onClick={handleGoToAnalytics}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              >
+                <FileText size={16} />
+                Go to Analytics
+              </button>
+              <button
+                onClick={handleGoToChat}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              >
+                <MessageCircle size={16} />
+                Go to Chat
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+              >
+                <LogOut size={16} />
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -249,7 +304,7 @@ const DocumentsList = () => {
                     Time
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Size
+                    Size / Progress
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -277,16 +332,38 @@ const DocumentsList = () => {
                       {doc.time}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {doc.size}
+                      {uploadProgress[doc.name] && doc.status === "processing" ? (
+                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full transition-all"
+                            style={{ width: `${uploadProgress[doc.name]}%` }}
+                          ></div>
+                        </div>
+                      ) : (
+                        doc.size
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(doc.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <button className="text-blue-600 hover:text-blue-800 p-1 rounded transition-colors">
+                        <button
+                          onClick={() => fastAPIService.downloadDocument(doc.name)}
+                          className="text-blue-600 hover:text-blue-800 p-1 rounded transition-colors"
+                        >
                           <Download size={16} />
                         </button>
+
+                        {doc.status === "processing" && (
+                          <button
+                            onClick={() => handleApprove(doc.name)}
+                            className="text-green-600 hover:text-green-800 p-1 rounded transition-colors"
+                            title="Approve document"
+                          >
+                            <Shield size={16} />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(doc.name)}
                           className="text-red-600 hover:text-red-800 p-1 rounded transition-colors"

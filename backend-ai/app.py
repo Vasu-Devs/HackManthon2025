@@ -45,9 +45,11 @@ CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "100"))
 TEMP_MD_DIR = os.getenv("TEMP_MD_DIR", "./temp_md")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "20"))
+UPLOAD_DIR = Path("./uploaded_docs")  # Permanent storage for uploaded PDFs
 
 os.makedirs(PERSIST_DIR, exist_ok=True)
 os.makedirs(TEMP_MD_DIR, exist_ok=True)
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 executor = ThreadPoolExecutor(max_workers=4)
 
@@ -150,9 +152,16 @@ def embed_and_store_fast(chunks: List[str], metadata: Optional[List[Dict]] = Non
     for f in futures:
         f.result()
     return _vectorstore
-
 async def run_gemini(prompt: str) -> str:
-    model = genai.GenerativeModel(GEMINI_MODEL)
+    model = genai.GenerativeModel(
+        GEMINI_MODEL,
+        generation_config={
+            "temperature": 0,
+            "max_output_tokens": 1800,
+            "top_p": 0.8,
+            "candidate_count": 1
+        }
+    )
     resp = model.generate_content(prompt)
     return resp.text if resp and resp.text else "No response generated."
 
@@ -205,6 +214,16 @@ def startup_event():
         _vectorstore = None
     print("🔥 Gemini backend ready!")
 
+# -------------------- CHAT HELPERS --------------------
+GREETING_PATTERNS = re.compile(r"^\s*(hi|hello|hey+|yo|hola|namaste|bonjour|👋)\s*!*$", re.IGNORECASE)
+CLOSING_PATTERNS = re.compile(r"^\s*(thanks|thank you|ok|bye|goodbye|good night|cool|great)\s*!*$", re.IGNORECASE)
+
+def is_greeting(msg: str) -> bool:
+    return bool(GREETING_PATTERNS.match(msg.strip()))
+
+def is_closing(msg: str) -> bool:
+    return bool(CLOSING_PATTERNS.match(msg.strip()))
+
 # -------------------- ENDPOINTS --------------------
 @app.get("/health")
 def health():
@@ -222,6 +241,16 @@ async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "
 
     if user_id not in _chat_history:
         _chat_history[user_id] = []
+    
+    msg = payload.message.strip()
+
+    if is_greeting(msg):
+        return ChatResponse(response="Hey there! How can I help you today?",
+                            department=payload.department, sources=[], elapsed_seconds=0.0)
+
+    if is_closing(msg):
+        return ChatResponse(response="You're welcome! Have a great day 🚀",
+                            department=payload.department, sources=[], elapsed_seconds=0.0)
 
     _chat_history[user_id].append({"role": "student", "content": payload.message})
     conversation = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in _chat_history[user_id]])
@@ -230,20 +259,48 @@ async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "
     docs = retriever.get_relevant_documents(payload.message)
     approved = [d for d in docs if _doc_approval_status.get(d.metadata.get("source"), False)]
 
+    if not approved:
+        return ChatResponse(
+            response="I'm not fully certain about this. Let me connect you with the department staff for confirmation.",
+            department=payload.department,
+            sources=[],
+            elapsed_seconds=0.0
+        )
+
     context_snippets = "\n\n".join([d.page_content[:500] for d in approved])
-
+    
     prompt = f"""
-    The following is a conversation between a student and a helpful college assistant specializing in {payload.department}.
-    Maintain context across turns. Always assume queries are about THIS college.
+You are **College Assistant**, an intelligent multilingual virtual agent for the {payload.department} department. 
+Your role is to resolve student queries directly, clearly, and confidently, using available college documents and context.
 
-    Conversation so far:
-    {conversation}
+If the query is a casual greeting or non-informational (e.g., "hey", "hi", "thanks"),
+DO NOT explain categories or ask clarifications. Just reply with one short friendly line.
 
-    Relevant documents:
-    {context_snippets}
+🔥 CORE DIRECTIVES
+1. **Directness**: Always give one clear, confident answer. No "options", no meta-explanations. 
+2. **Conciseness**: Default to ≤3 sentences. Expand only if the student explicitly asks for details. 
+3. **Professional Confidence**: Sound authoritative, like a knowledgeable staff assistant—not a chatbot. 
+4. **Fallback**: If relevant info is missing, incomplete, or confidence <80%, respond with:  
+   "I'm not fully certain about this. Let me connect you with the department staff for confirmation."
+5. **Truthfulness**: Never invent policies, numbers, or facts. Stick to retrieved documents + college knowledge. 
+6. **No Follow-up Spam**: Do not ask the student for clarifications unless the query is completely ambiguous. 
+7. **Multilingual Mode**: Detect the student’s input language. Reply in the same language unless requested otherwise. 
+8. **Tone**: Helpful, approachable, respectful—like a senior guide or mentor. Friendly, never robotic.
 
-    Assistant:
-    """
+📚 CONTEXT
+Conversation so far:
+{conversation}
+
+Relevant verified college documents:
+{context_snippets}
+
+🎯 TASK
+Student has asked: "{payload.message}"
+
+Now, as the **College Assistant**, give the BEST possible reply following all directives above.
+
+Assistant:
+"""
 
     start = time.time()
     result_text = await run_gemini(prompt)
@@ -266,7 +323,6 @@ async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "
         sources=[{"source": d.metadata.get("source")} for d in approved],
         elapsed_seconds=round(elapsed, 3)
     )
-
 @app.post("/chat_stream")
 async def chat_stream(payload: ChatRequest = Body(...)):
     query = payload.message
@@ -319,6 +375,14 @@ async def upload_pdf_async(background_tasks: BackgroundTasks, file: UploadFile =
     content = await file.read()
     upload_id = f"{file.filename}_{int(time.time())}"
     upload_progress[upload_id] = {"status": "started", "progress": 0}
+
+    # Permanent copy (Option 2)
+    try:
+        (UPLOAD_DIR / file.filename).write_bytes(content)
+    except Exception as e:
+        upload_progress[upload_id] = {"status": "error", "error": f"Failed to save file: {e}"}
+        raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
+
     background_tasks.add_task(process_pdf_background, upload_id, content, file.filename)
 
     log_activity(f"📤 Upload started: {file.filename}")
@@ -328,7 +392,15 @@ async def process_pdf_background(upload_id: str, file_content: bytes, filename: 
     try:
         temp_path = Path(TEMP_MD_DIR) / filename
         temp_path.write_bytes(file_content)
-        upload_progress[upload_id] = {"status": "processing", "progress": 0}
+
+        # Initial status with known filename
+        upload_progress[upload_id] = {
+            "status": "processing",
+            "progress": 0,
+            "processed_chunks": 0,
+            "total_chunks": 0,
+            "filename": filename
+        }
 
         # Step 1: Extract text
         text = extract_text_from_pdf(temp_path)
@@ -337,26 +409,45 @@ async def process_pdf_background(upload_id: str, file_content: bytes, filename: 
         # Step 2: Chunk text
         chunks = chunk_text(text)
         if not chunks:
-            upload_progress[upload_id] = {"status": "error", "error": "No valid text"}
+            upload_progress[upload_id] = {
+                "status": "error",
+                "error": "No valid text",
+                "filename": filename,
+                "processed_chunks": 0,
+                "total_chunks": 0
+            }
             return
 
         total = len(chunks)
+
+        # ✅ Update total_chunks immediately so frontend sees it
+        upload_progress[upload_id]["total_chunks"] = total
+
         metadata = [{"source": filename, "chunk_id": i} for i in range(total)]
 
-        # Step 3: Embed in batches with progress updates
+        # Step 3: Embed per chunk for accurate progress updates
         global _vectorstore
         if _vectorstore is None:
             embeddings = OllamaEmbeddings(model="nomic-embed-text")
             _vectorstore = Chroma(persist_directory=PERSIST_DIR, embedding_function=embeddings)
 
-        for i in range(0, total, BATCH_SIZE):
-            batch = chunks[i:i+BATCH_SIZE]
-            meta_batch = metadata[i:i+BATCH_SIZE]
-            _vectorstore.add_texts(texts=batch, metadatas=meta_batch)
+        for i, chunk in enumerate(chunks):
+            _vectorstore.add_texts(texts=[chunk], metadatas=[metadata[i]])
 
-            # Update progress (% of chunks processed)
-            progress = int(((i + len(batch)) / total) * 100)
-            upload_progress[upload_id] = {"status": "processing", "progress": progress}
+            processed = i + 1
+            pct = int((processed / total) * 100)
+
+            # ✅ Update progress after EACH chunk
+            upload_progress[upload_id] = {
+                "status": "processing",
+                "progress": pct,
+                "processed_chunks": processed,
+                "total_chunks": total,
+                "filename": filename
+            }
+
+            # Yield control so frontend poller can catch the update
+            await asyncio.sleep(0.2)
 
         # Step 4: Mark doc as uploaded but not approved
         _doc_approval_status[filename] = False
@@ -364,21 +455,36 @@ async def process_pdf_background(upload_id: str, file_content: bytes, filename: 
         upload_progress[upload_id] = {
             "status": "completed",
             "progress": 100,
-            "num_chunks": total
+            "num_chunks": total,
+            "processed_chunks": total,
+            "total_chunks": total,
+            "filename": filename
         }
 
         log_activity(f"✅ Upload completed: {filename}")
+
         try:
             temp_path.unlink()
         except:
             pass
-    except Exception as e:
-        upload_progress[upload_id] = {"status": "error", "error": str(e)}
 
+    except Exception as e:
+        upload_progress[upload_id] = {
+            "status": "error",
+            "error": str(e),
+            "filename": filename,
+            "processed_chunks": 0,
+            "total_chunks": 0
+        }
 
 @app.get("/upload_status/{upload_id}")
 def get_upload_status(upload_id: str):
-    return upload_progress.get(upload_id, {"status": "not_found"})
+    return upload_progress.get(upload_id, {
+        "status": "not_found",
+        "progress": 0,
+        "processed_chunks": 0,
+        "total_chunks": 0,
+    })
 
 @app.post("/approve_doc/{filename}")
 def approve_doc(filename: str):
@@ -392,10 +498,21 @@ def approve_doc(filename: str):
 def delete_doc(filename: str):
     global _vectorstore
     try:
-        _vectorstore._collection.delete(where={"source": filename})
+        # 1. Remove from vectorstore
+        if _vectorstore is not None:
+            _vectorstore._collection.delete(where={"source": filename})
+
+        # 2. Remove approval status
         _doc_approval_status.pop(filename, None)
+
+        # 3. Remove physical file from UPLOAD_DIR
+        file_path = UPLOAD_DIR / filename
+        if file_path.exists():
+            file_path.unlink()
+
         log_activity(f"🗑️ Deleted: {filename}")
-        return {"message": f"{filename} deleted from vectorstore"}
+        return {"message": f"{filename} deleted completely (vectorstore + storage)"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Delete failed: {e}")
 
@@ -416,13 +533,39 @@ def test_retrieval(request: ChatRequest):
 
 @app.get("/documents")
 def list_documents():
+    """
+    Lists documents based on permanent storage in UPLOAD_DIR so they survive restarts.
+    Also shows approval status from in-memory map (defaults to 'processing' if not set).
+    """
     docs = []
-    for filename, approved in _doc_approval_status.items():
-        docs.append({
-            "name": filename,
-            "status": "verified" if approved else "processing"
-        })
-    return docs
+    try:
+        for path in sorted(UPLOAD_DIR.glob("*")):
+            if not path.is_file():
+                continue
+            filename = path.name
+            approved = _doc_approval_status.get(filename, False)
+            try:
+                size = path.stat().st_size
+                uploaded_ts = path.stat().st_mtime
+                uploaded_iso = datetime.fromtimestamp(uploaded_ts).isoformat()
+                docs.append({
+                    "name": filename,
+                    "status": "verified" if approved else "processing",
+                    "size": size,
+                    "date": uploaded_iso.split("T")[0],
+                    "time": uploaded_iso.split("T")[1][:8],
+                })
+            except Exception:
+                docs.append({
+                    "name": filename,
+                    "status": "verified" if approved else "processing",
+                    "size": None,
+                    "date": None,
+                    "time": None,
+                })
+        return docs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list documents: {e}")
 
 @app.get("/recent_activities")
 def get_recent_activities():
@@ -439,6 +582,16 @@ def get_logs():
         return {"logs": last_logs}
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/get_file/{filename}")
+def get_file(filename: str):
+    """
+    Streams a permanently stored PDF from UPLOAD_DIR.
+    """
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(str(file_path), filename=filename, media_type="application/pdf")
 
 # -------------------- RUN --------------------
 if __name__ == "__main__":
