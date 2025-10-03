@@ -4,19 +4,17 @@ A comprehensive college assistant application built with React frontend, Node.js
 
 ## 🎥 Live Demo
 
-https://github.com/Vasu-Devs/HackManthon2025/assets/demo.mp4
+
+Watch our comprehensive demo showcasing the College Assistant's features:
+
+[![Watch the demo](https://img.youtube.com/vi/n8PQeQOOO1o/0.jpg)](https://youtu.be/n8PQeQOOO1o)
 
 *📹 Full system demonstration showing AI chat, document management, and admin features*
-
-## � Demo Videolege Assistant - AI-Powered RAG System
 
 A comprehensive college assistant application built with React frontend, Node.js authentication service, and FastAPI AI backend with RAG (Retrieval-Augmented Generation) capabilities.
 
 ## � Demo Video
 
-Watch our comprehensive demo showcasing the College Assistant's features:
-
-[![Watch the demo](https://img.youtube.com/vi/n8PQeQOOO1o/0.jpg)](https://youtu.be/n8PQeQOOO1o)
 ### 🎬 What's Covered in the Demo:
 - **🔐 Authentication Flow** - Student and admin login systems with role-based access
 - **💬 AI Chat Interface** - Real-time streaming responses with document retrieval context
