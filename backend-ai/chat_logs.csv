@@ -1,0 +1,101 @@
+query_id,student_query,detected_language,AI_response,category,model_confidence,confidence_score,fall_back,retrieved_docs,response_time,timestamp
+Q001,Sample query about scholarship in Hindi,Hindi,Scholarship forms are available on the college website.,Scholarship,Low,0.62,No,Scholarship_Doc.pdf,1.21s,2025-10-01 19:18:56
+Q002,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Medium,0.75,Yes,None,2.17s,2025-10-01 19:18:56
+Q003,Sample query about timetable in English,English,The updated timetable is available on the portal.,Timetable,Low,0.56,No,Timetable_Doc.pdf,1.33s,2025-10-01 19:18:56
+Q004,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,High,0.88,No,General Query_Doc.pdf,1.73s,2025-10-01 19:18:56
+Q005,Sample query about general query in Hindi,Hindi,Please check the college notice board for details.,General Query,High,0.89,No,General Query_Doc.pdf,1.7s,2025-10-01 19:18:56
+Q006,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,Low,0.43,Yes,None,2.24s,2025-10-01 19:18:56
+Q007,Sample query about timetable in Tamil,Tamil,The updated timetable is available on the portal.,Timetable,Medium,0.85,No,Timetable_Doc.pdf,1.87s,2025-10-01 19:18:56
+Q008,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Medium,0.78,Yes,None,1.21s,2025-10-01 19:18:56
+Q009,Sample query about scholarship in Hindi,Hindi,Scholarship forms are available on the college website.,Scholarship,Medium,0.66,No,Scholarship_Doc.pdf,1.48s,2025-10-01 19:18:56
+Q010,Sample query about scholarship in English,English,Scholarship forms are available on the college website.,Scholarship,Medium,0.76,No,Scholarship_Doc.pdf,1.83s,2025-10-01 19:18:56
+Q011,Sample query about timetable in Telugu,Telugu,The updated timetable is available on the portal.,Timetable,Low,0.55,No,Timetable_Doc.pdf,1.52s,2025-10-01 19:18:56
+Q012,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,Low,0.54,Yes,None,1.04s,2025-10-01 19:18:56
+Q013,Sample query about scholarship in English,English,Scholarship forms are available on the college website.,Scholarship,Medium,0.79,No,Scholarship_Doc.pdf,1.17s,2025-10-01 19:18:56
+Q014,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,High,0.93,Yes,None,1.71s,2025-10-01 19:18:56
+Q015,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,High,0.89,No,Scholarship_Doc.pdf,1.27s,2025-10-01 19:18:56
+Q016,Sample query about fee deadlines in English,English,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.64,No,Fee Deadlines_Doc.pdf,2.5s,2025-10-01 19:18:56
+Q017,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Low,0.54,Yes,None,1.81s,2025-10-01 19:18:56
+Q018,Sample query about timetable in Marathi,Marathi,The updated timetable is available on the portal.,Timetable,Low,0.5,No,Timetable_Doc.pdf,1.99s,2025-10-01 19:18:56
+Q019,Sample query about general query in English,English,Please check the college notice board for details.,General Query,Medium,0.8,No,General Query_Doc.pdf,2.23s,2025-10-01 19:18:56
+Q020,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,High,0.93,No,Fee Deadlines_Doc.pdf,1.77s,2025-10-01 19:18:56
+Q021,Sample query about fee deadlines in Tamil,Tamil,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.84,No,Fee Deadlines_Doc.pdf,1.94s,2025-10-01 19:18:56
+Q022,Sample query about fallback in Telugu,Telugu,Connecting you to a human staff member...,Fallback,High,0.94,Yes,None,1.09s,2025-10-01 19:18:56
+Q023,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,Medium,0.7,No,Timetable_Doc.pdf,2.41s,2025-10-01 19:18:56
+Q024,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,Medium,0.69,No,Timetable_Doc.pdf,1.91s,2025-10-01 19:18:56
+Q025,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,Low,0.55,No,Timetable_Doc.pdf,1.66s,2025-10-01 19:18:56
+Q026,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,High,0.89,Yes,None,2.11s,2025-10-01 19:18:56
+Q027,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,Low,0.61,Yes,None,2.39s,2025-10-01 19:18:56
+Q028,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,Medium,0.85,No,Scholarship_Doc.pdf,1.69s,2025-10-01 19:18:56
+Q029,Sample query about scholarship in Hindi,Hindi,Scholarship forms are available on the college website.,Scholarship,Low,0.56,No,Scholarship_Doc.pdf,1.66s,2025-10-01 19:18:56
+Q030,Sample query about scholarship in English,English,Scholarship forms are available on the college website.,Scholarship,Low,0.53,No,Scholarship_Doc.pdf,1.59s,2025-10-01 19:18:56
+Q031,Sample query about timetable in Tamil,Tamil,The updated timetable is available on the portal.,Timetable,Low,0.58,No,Timetable_Doc.pdf,1.17s,2025-10-01 19:18:56
+Q032,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Medium,0.79,Yes,None,1.75s,2025-10-01 19:18:56
+Q033,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.49,Yes,Fee Deadlines_Doc.pdf,1.23s,2025-10-01 19:18:56
+Q034,Sample query about fallback in English,English,Connecting you to a human staff member...,Fallback,Medium,0.77,Yes,None,1.82s,2025-10-01 19:18:56
+Q035,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,Low,0.47,Yes,Scholarship_Doc.pdf,2.35s,2025-10-01 19:18:56
+Q036,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,Medium,0.7,No,General Query_Doc.pdf,1.98s,2025-10-01 19:18:56
+Q037,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,Low,0.65,No,General Query_Doc.pdf,1.42s,2025-10-01 19:18:56
+Q038,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,Medium,0.72,No,General Query_Doc.pdf,1.31s,2025-10-01 19:18:56
+Q039,Sample query about general query in Hindi,Hindi,Please check the college notice board for details.,General Query,High,0.93,No,General Query_Doc.pdf,1.45s,2025-10-01 19:18:56
+Q040,Sample query about general query in Marathi,Marathi,Please check the college notice board for details.,General Query,Medium,0.83,No,General Query_Doc.pdf,2.28s,2025-10-01 19:18:56
+Q041,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Medium,0.74,Yes,None,2.24s,2025-10-01 19:18:56
+Q042,Sample query about fee deadlines in Hindi,Hindi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.64,No,Fee Deadlines_Doc.pdf,2.22s,2025-10-01 19:18:56
+Q043,Sample query about timetable in Tamil,Tamil,The updated timetable is available on the portal.,Timetable,Medium,0.82,No,Timetable_Doc.pdf,1.76s,2025-10-01 19:18:56
+Q044,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,Medium,0.73,Yes,None,2.29s,2025-10-01 19:18:56
+Q045,Sample query about timetable in English,English,The updated timetable is available on the portal.,Timetable,Low,0.58,No,Timetable_Doc.pdf,1.35s,2025-10-01 19:18:56
+Q046,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,Low,0.56,No,Timetable_Doc.pdf,1.72s,2025-10-01 19:18:56
+Q047,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,Low,0.51,No,General Query_Doc.pdf,2.34s,2025-10-01 19:18:56
+Q048,Sample query about fallback in English,English,Connecting you to a human staff member...,Fallback,Medium,0.67,Yes,None,2.49s,2025-10-01 19:18:56
+Q049,Sample query about scholarship in Tamil,Tamil,Scholarship forms are available on the college website.,Scholarship,Medium,0.66,No,Scholarship_Doc.pdf,2.08s,2025-10-01 19:18:56
+Q050,Sample query about general query in Tamil,Tamil,Please check the college notice board for details.,General Query,Medium,0.68,No,General Query_Doc.pdf,1.13s,2025-10-01 19:18:56
+Q051,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,Low,0.61,No,Scholarship_Doc.pdf,1.6s,2025-10-01 19:18:56
+Q052,Sample query about fallback in Telugu,Telugu,Connecting you to a human staff member...,Fallback,Low,0.58,Yes,None,2.42s,2025-10-01 19:18:56
+Q053,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,High,0.94,No,Timetable_Doc.pdf,2.19s,2025-10-01 19:18:56
+Q054,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Low,0.61,Yes,None,1.26s,2025-10-01 19:18:56
+Q055,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.78,No,Fee Deadlines_Doc.pdf,1.66s,2025-10-01 19:18:56
+Q056,Sample query about fee deadlines in Tamil,Tamil,The last date for fee submission is 15 October 2025.,Fee Deadlines,High,0.88,No,Fee Deadlines_Doc.pdf,2.32s,2025-10-01 19:18:56
+Q057,Sample query about fee deadlines in Telugu,Telugu,The last date for fee submission is 15 October 2025.,Fee Deadlines,High,0.91,No,Fee Deadlines_Doc.pdf,1.57s,2025-10-01 19:18:56
+Q058,Sample query about scholarship in Telugu,Telugu,Scholarship forms are available on the college website.,Scholarship,Medium,0.71,No,Scholarship_Doc.pdf,1.09s,2025-10-01 19:18:56
+Q059,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.85,No,Fee Deadlines_Doc.pdf,1.82s,2025-10-01 19:18:56
+Q060,Sample query about timetable in Marathi,Marathi,The updated timetable is available on the portal.,Timetable,High,0.94,No,Timetable_Doc.pdf,2.14s,2025-10-01 19:18:56
+Q061,Sample query about general query in Marathi,Marathi,Please check the college notice board for details.,General Query,Medium,0.85,No,General Query_Doc.pdf,2.26s,2025-10-01 19:18:56
+Q062,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,Low,0.44,Yes,Scholarship_Doc.pdf,1.71s,2025-10-01 19:18:56
+Q063,Sample query about scholarship in Tamil,Tamil,Scholarship forms are available on the college website.,Scholarship,Low,0.5,No,Scholarship_Doc.pdf,1.46s,2025-10-01 19:18:56
+Q064,Sample query about fee deadlines in Hindi,Hindi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.46,Yes,Fee Deadlines_Doc.pdf,2.33s,2025-10-01 19:18:56
+Q065,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.44,Yes,Fee Deadlines_Doc.pdf,2.29s,2025-10-01 19:18:56
+Q066,Sample query about fee deadlines in Telugu,Telugu,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.57,No,Fee Deadlines_Doc.pdf,2.08s,2025-10-01 19:18:56
+Q067,Sample query about fee deadlines in Hindi,Hindi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.52,No,Fee Deadlines_Doc.pdf,2.22s,2025-10-01 19:18:56
+Q068,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,Medium,0.7,No,General Query_Doc.pdf,1.81s,2025-10-01 19:18:56
+Q069,Sample query about general query in Tamil,Tamil,Please check the college notice board for details.,General Query,High,0.92,No,General Query_Doc.pdf,2.35s,2025-10-01 19:18:56
+Q070,Sample query about fee deadlines in Marathi,Marathi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.79,No,Fee Deadlines_Doc.pdf,1.52s,2025-10-01 19:18:56
+Q071,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Low,0.56,Yes,None,1.23s,2025-10-01 19:18:56
+Q072,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,High,0.9,No,General Query_Doc.pdf,1.06s,2025-10-01 19:18:56
+Q073,Sample query about fee deadlines in Hindi,Hindi,The last date for fee submission is 15 October 2025.,Fee Deadlines,High,0.94,No,Fee Deadlines_Doc.pdf,1.13s,2025-10-01 19:18:56
+Q074,Sample query about scholarship in Telugu,Telugu,Scholarship forms are available on the college website.,Scholarship,Medium,0.81,No,Scholarship_Doc.pdf,1.67s,2025-10-01 19:18:56
+Q075,Sample query about fallback in English,English,Connecting you to a human staff member...,Fallback,Low,0.51,Yes,None,2.43s,2025-10-01 19:18:56
+Q076,Sample query about timetable in English,English,The updated timetable is available on the portal.,Timetable,High,0.89,No,Timetable_Doc.pdf,1.16s,2025-10-01 19:18:56
+Q077,Sample query about fallback in Marathi,Marathi,Connecting you to a human staff member...,Fallback,Low,0.52,Yes,None,1.19s,2025-10-01 19:18:56
+Q078,Sample query about scholarship in Hindi,Hindi,Scholarship forms are available on the college website.,Scholarship,High,0.87,No,Scholarship_Doc.pdf,1.02s,2025-10-01 19:18:56
+Q079,Sample query about fallback in Telugu,Telugu,Connecting you to a human staff member...,Fallback,Low,0.47,Yes,None,2.3s,2025-10-01 19:18:56
+Q080,Sample query about scholarship in Tamil,Tamil,Scholarship forms are available on the college website.,Scholarship,Medium,0.74,No,Scholarship_Doc.pdf,1.05s,2025-10-01 19:18:56
+Q081,Sample query about fee deadlines in Tamil,Tamil,The last date for fee submission is 15 October 2025.,Fee Deadlines,High,0.94,No,Fee Deadlines_Doc.pdf,1.03s,2025-10-01 19:18:56
+Q082,Sample query about scholarship in Marathi,Marathi,Scholarship forms are available on the college website.,Scholarship,High,0.94,No,Scholarship_Doc.pdf,1.34s,2025-10-01 19:18:56
+Q083,Sample query about timetable in Marathi,Marathi,The updated timetable is available on the portal.,Timetable,Low,0.41,Yes,Timetable_Doc.pdf,2.39s,2025-10-01 19:18:56
+Q084,Sample query about fallback in Hindi,Hindi,Connecting you to a human staff member...,Fallback,Medium,0.82,Yes,None,1.37s,2025-10-01 19:18:56
+Q085,Sample query about scholarship in English,English,Scholarship forms are available on the college website.,Scholarship,Low,0.51,No,Scholarship_Doc.pdf,2.25s,2025-10-01 19:18:56
+Q086,Sample query about fallback in Telugu,Telugu,Connecting you to a human staff member...,Fallback,Low,0.57,Yes,None,1.96s,2025-10-01 19:18:56
+Q087,Sample query about fallback in Tamil,Tamil,Connecting you to a human staff member...,Fallback,Medium,0.77,Yes,None,2.39s,2025-10-01 19:18:56
+Q088,Sample query about fee deadlines in English,English,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.83,No,Fee Deadlines_Doc.pdf,1.6s,2025-10-01 19:18:56
+Q089,Sample query about general query in Tamil,Tamil,Please check the college notice board for details.,General Query,Medium,0.74,No,General Query_Doc.pdf,1.46s,2025-10-01 19:18:56
+Q090,Sample query about timetable in Tamil,Tamil,The updated timetable is available on the portal.,Timetable,High,0.9,No,Timetable_Doc.pdf,1.71s,2025-10-01 19:18:56
+Q091,Sample query about general query in Telugu,Telugu,Please check the college notice board for details.,General Query,High,0.91,No,General Query_Doc.pdf,2.35s,2025-10-01 19:18:56
+Q092,Sample query about general query in English,English,Please check the college notice board for details.,General Query,Low,0.41,Yes,General Query_Doc.pdf,1.88s,2025-10-01 19:18:56
+Q093,Sample query about timetable in Telugu,Telugu,The updated timetable is available on the portal.,Timetable,Low,0.58,No,Timetable_Doc.pdf,1.95s,2025-10-01 19:18:56
+Q094,Sample query about general query in Marathi,Marathi,Please check the college notice board for details.,General Query,Low,0.49,Yes,General Query_Doc.pdf,2.48s,2025-10-01 19:18:56
+Q095,Sample query about timetable in Hindi,Hindi,The updated timetable is available on the portal.,Timetable,Low,0.6,No,Timetable_Doc.pdf,2.1s,2025-10-01 19:18:56
+Q096,Sample query about scholarship in Tamil,Tamil,Scholarship forms are available on the college website.,Scholarship,Low,0.47,Yes,Scholarship_Doc.pdf,1.67s,2025-10-01 19:18:56
+Q097,Sample query about fallback in Hindi,Hindi,Connecting you to a human staff member...,Fallback,Medium,0.79,Yes,None,1.73s,2025-10-01 19:18:56
+Q098,Sample query about scholarship in Tamil,Tamil,Scholarship forms are available on the college website.,Scholarship,Low,0.56,No,Scholarship_Doc.pdf,1.25s,2025-10-01 19:18:56
+Q099,Sample query about fee deadlines in Hindi,Hindi,The last date for fee submission is 15 October 2025.,Fee Deadlines,Low,0.42,Yes,Fee Deadlines_Doc.pdf,1.09s,2025-10-01 19:18:56
+Q100,Sample query about fee deadlines in Telugu,Telugu,The last date for fee submission is 15 October 2025.,Fee Deadlines,Medium,0.83,No,Fee Deadlines_Doc.pdf,2.2s,2025-10-01 19:18:56

@@ -1,0 +1,25 @@
+# Core server
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+
+# LangChain + Vector DB
+langchain
+langchain-community
+chromadb
+
+# Ollama embeddings (nomic-embed-text)
+ollama
+
+# Google AI SDKs
+google-generativeai
+google-cloud-speech
+google-cloud-texttospeech
+
+# PDF processing
+pdfplumber
+PyPDF2
+
+# Utils
+requests
