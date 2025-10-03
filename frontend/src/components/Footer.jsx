@@ -35,9 +35,9 @@ const Footer = () => {
 
         {/* Brand and Copyright */}
         <div className="text-center space-y-2">
-          <div className="text-2xl font-medium text-gray-900">PolySee :)</div>
+          <div className="text-2xl font-medium text-gray-900">CollegeGPT :)</div>
           <div className="text-xs text-gray-600">
-            ©2025 PolySee. All Rights Reserved
+            ©2025 CollegeGPT. All Rights Reserved
           </div>
         </div>
       </div>

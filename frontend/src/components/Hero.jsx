@@ -4,7 +4,8 @@ import HowItWorks from "../assets/HowItWorks.svg";
 import FeatureCards from "./FeatureCards";
 import LanguageSwitcher from "./LanguageSwitcher";
 import Signup from "./Signup";
-
+import sendIcon from "../../icons/send.svg";
+import voiceIcon from "../../icons/voice_mode.svg";
 const Hero = () => {
   const [isSignupOpen, setIsSignupOpen] = useState(false);
 
@@ -12,7 +13,7 @@ const Hero = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navigation */}
       <nav className="flex justify-between items-center px-8 py-4 mb-15">
-        <div className="text-xl font-medium text-gray-900">PolySee :)</div>
+        <div className="text-xl font-medium text-gray-900">CollegeGPT :)</div>
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setIsSignupOpen(true)}
@@ -50,7 +51,7 @@ const Hero = () => {
       </nav>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-8">
+      <div className="flex-1 flex items-center mt-15 justify-center px-8">
         <div className="max-w-4xl mx-auto text-center relative">
           {/* Decorative Labels */}
           <div className="absolute -top-16 left-0 text-gray-400 text-lg font-light italic transform -rotate-12">
@@ -68,12 +69,12 @@ const Hero = () => {
 
           {/* Main Heading */}
           <div className="space-y-2">
-            <div className="flex items-center justify-center space-x-6 text-6xl font-bold text-gray-900">
+            <div className="flex items-center justify-center space-x-6 text-7xl font-medium text-gray-900">
               <span>Instant</span>
               <LanguageSwitcher />
               <span>on</span>
             </div>
-            <div className="text-6xl font-bold text-gray-900">
+            <div className="text-7xl font-medium text-gray-900">
               Policies, Rules & More!
             </div>
           </div>
@@ -92,39 +93,14 @@ const Hero = () => {
               <input
                 type="text"
                 placeholder="Ask me anything..."
-                className="w-full px-6 py-4 text-gray-300 bg-gray-900 rounded-full border-none outline-none text-lg"
+                className="w-full px-6 py-4 text-gray-300 placeholder:text-gray-200 bg-black rounded-full border-none outline-none text-lg"
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2">
-                <button className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors">
+                  <img src={voiceIcon}/>
                 </button>
-                <button className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  strokeWidth={2}
-  d="M5 10l7-7m0 0l7 7m-7-7v18"
-/>
-
-                  </svg>
+                <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors">
+                  <img src={sendIcon} alt="" />
                 </button>
               </div>
             </div>
