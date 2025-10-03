@@ -75,7 +75,7 @@ const Signup = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/20 backdrop-blur-xs flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -101,7 +101,7 @@ const Signup = ({ isOpen, onClose }) => {
               isBlackLeft ? "order-1" : "order-2"
             } z-20`}
           >
-            <div className="absolute inset-0 bg-gray-900 text-white flex flex-col justify-center">
+            <div className="absolute inset-0 bg-black text-white flex flex-col justify-center">
               <BlackPanel onSwitch={handleSwitch} />
             </div>
           </motion.div>

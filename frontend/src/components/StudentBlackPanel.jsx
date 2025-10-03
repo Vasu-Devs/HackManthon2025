@@ -36,7 +36,7 @@ const StudentBlackPanel = ({ onSwitch }) => {
 
         <button 
           onClick={onSwitch}
-          className="bg-white text-gray-900 px-22 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-sm cursor-pointer"
+          className="bg-white text-black px-22 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-sm cursor-pointer"
         >
           Switch to Admin Portal
         </button>
