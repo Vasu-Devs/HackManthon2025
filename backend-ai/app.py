@@ -29,6 +29,19 @@ import google.generativeai as genai
 # PDF loaders
 import pdfplumber
 import PyPDF2
+from fastapi import Request
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import httpx
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:4000")
+
+
 try:
     from langchain_community.document_loaders import PyPDFLoader
     LANGCHAIN_PDF_AVAILABLE = True
@@ -107,6 +120,55 @@ def log_activity(message: str):
     if len(_activity_log) > 20:
         _activity_log.pop()
 
+# ----------------EMAIL--------------------------
+async def get_user_email(user_id: str, token: str) -> str:
+    """
+    Fetch user email from Express auth service using regNo + JWT token.
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            # Call your /auth/me to verify & get user payload
+            resp = await client.get(f"{AUTH_SERVICE_URL}/auth/me", headers={"Authorization": f"Bearer {token}"})
+            if resp.status_code != 200:
+                return None
+            payload = resp.json()
+            regNo = payload.get("regNo")
+
+            # Now call a custom route (you can add /api/user/email/:regNo in Express)
+            user_resp = await client.get(f"{AUTH_SERVICE_URL}/api/user/{regNo}", headers={"Authorization": f"Bearer {token}"})
+            if user_resp.status_code == 200:
+                return user_resp.json().get("email")
+    except Exception as e:
+        print("❌ get_user_email failed:", e)
+    return None
+
+
+def send_email(to_email: str, subject: str, body: str):
+    """
+    Send an email via SendGrid and raise on failure.
+    Requires:
+      SENDGRID_API_KEY
+      SENDGRID_SENDER  -> must be a verified Single Sender OR a domain-authenticated address
+    """
+    sg_api_key = os.getenv("SENDGRID_API_KEY")
+    sender = os.getenv("SENDGRID_SENDER")
+
+    if not sg_api_key or not sender:
+        raise Exception("Missing SENDGRID_API_KEY or SENDGRID_SENDER in environment")
+
+    message = Mail(
+        from_email=sender,         # must match a verified sender in SendGrid
+        to_emails=to_email,        # can be any recipient
+        subject=subject,
+        plain_text_content=body
+    )
+
+    sg = SendGridAPIClient(sg_api_key)
+    response = sg.send(message)
+
+    # SendGrid returns 202 on success (accepted)
+    if response.status_code != 202:
+        raise Exception(f"SendGrid error status={response.status_code}, body={response.body}")
 def extract_text_from_pdf(pdf_path: Path) -> str:
     if pdfplumber:
         with pdfplumber.open(pdf_path) as pdf:
@@ -212,6 +274,9 @@ def startup_event():
     except Exception as e:
         print(f"❌ Failed to load vectorstore: {e}")
         _vectorstore = None
+    print("📧 SENDGRID_API_KEY loaded:", bool(os.getenv("SENDGRID_API_KEY")))
+    print("📧 SENDGRID_SENDER:", os.getenv("SENDGRID_SENDER"))
+
     print("🔥 Gemini backend ready!")
 
 # -------------------- CHAT HELPERS --------------------
@@ -229,8 +294,14 @@ def is_closing(msg: str) -> bool:
 def health():
     return {"status": "ok", "vectorstore_loaded": _vectorstore is not None}
 
+
 @app.post("/chat", response_model=ChatResponse)
-async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "default"):
+async def chat_with_assistant(
+    payload: ChatRequest = Body(...), 
+    user_id: str = "default", 
+    background_tasks: BackgroundTasks = None,
+    request: Request = None   # <-- inject Request here
+):
     if _vectorstore is None:
         return ChatResponse(
             response="Vectorstore not initialized. Upload PDFs first.",
@@ -244,14 +315,96 @@ async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "
     
     msg = payload.message.strip()
 
+    # --- Greeting / Closing shortcuts ---
     if is_greeting(msg):
-        return ChatResponse(response="Hey there! How can I help you today?",
-                            department=payload.department, sources=[], elapsed_seconds=0.0)
+        return ChatResponse(
+            response="Hey there! How can I help you today?",
+            department=payload.department, 
+            sources=[], 
+            elapsed_seconds=0.0
+        )
 
     if is_closing(msg):
-        return ChatResponse(response="You're welcome! Have a great day 🚀",
-                            department=payload.department, sources=[], elapsed_seconds=0.0)
+        return ChatResponse(
+            response="You're welcome! Have a great day 🚀",
+            department=payload.department, 
+            sources=[], 
+            elapsed_seconds=0.0
+        )
 
+    # --- Detect reminder intent with Gemini ---
+    intent_prompt = f"""
+    Determine if this student query is asking to set a reminder.
+    Query: "{msg}"
+
+    Respond ONLY with one word: "reminder" or "normal".
+    """
+    intent = (await run_gemini(intent_prompt)).strip().lower()
+
+    if "reminder" in intent:
+        # ✅ Proper JWT extraction from request headers
+        auth_header = request.headers.get("authorization") if request else None
+        token = auth_header.split(" ")[1] if auth_header else None
+
+        if not token:
+            return ChatResponse(
+                response="⚠️ Missing token, cannot verify your account for reminder.",
+                department=payload.department, 
+                sources=[], 
+                elapsed_seconds=0.0
+            )
+
+        to_email = await get_user_email(user_id, token)
+        if not to_email:
+            return ChatResponse(
+                response="⚠️ Could not find your email in the system to set a reminder.",
+                department=payload.department, 
+                sources=[], 
+                elapsed_seconds=0.0
+            )
+
+        # --- NEW: Ask Gemini to draft the reminder email ---
+        reminder_prompt = f"""
+        You are an assistant that creates reminder emails.
+
+        The student with regNo = {user_id} asked: "{msg}"
+
+        Task:
+        - Detect what they want to be reminded about.
+        - Write a short, polite email as the College Assistant.
+        - Tone: professional but friendly.
+        - Include emojis if suitable.
+        - Respond only with the email body text, no explanations.
+        """
+
+        email_body = await run_gemini(reminder_prompt)
+
+        subject = "📌 College Assistant Reminder"
+        body = f"""
+Hello {user_id},
+
+{email_body.strip()}
+
+Best regards,  
+College Assistant Bot
+        """
+
+        # Send email asynchronously
+        if background_tasks:
+            background_tasks.add_task(send_email, to_email, subject, body)
+        else:
+            send_email(to_email, subject, body)
+
+        log_activity(f"📧 Reminder email sent to {to_email}")
+
+        return ChatResponse(
+            response=f"✅ Reminder has been set! An email was sent to {to_email}.",
+            department=payload.department, 
+            sources=[], 
+            elapsed_seconds=0.0
+        )
+
+    # --- Normal RAG flow ---
     _chat_history[user_id].append({"role": "student", "content": payload.message})
     conversation = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in _chat_history[user_id]])
 
@@ -271,35 +424,17 @@ async def chat_with_assistant(payload: ChatRequest = Body(...), user_id: str = "
     
     prompt = f"""
 You are **College Assistant**, an intelligent multilingual virtual agent for the {payload.department} department. 
-Your role is to resolve student queries directly, clearly, and confidently, using available college documents and context.
+Your role is to resolve student queries directly, clearly, and confidently.
 
-If the query is a casual greeting or non-informational (e.g., "hey", "hi", "thanks"),
-DO NOT explain categories or ask clarifications. Just reply with one short friendly line.
-
-🔥 CORE DIRECTIVES
-1. **Directness**: Always give one clear, confident answer. No "options", no meta-explanations. 
-2. **Conciseness**: Default to ≤3 sentences. Expand only if the student explicitly asks for details. 
-3. **Professional Confidence**: Sound authoritative, like a knowledgeable staff assistant—not a chatbot. 
-4. **Fallback**: If relevant info is missing, incomplete, or confidence <80%, respond with:  
-   "I'm not fully certain about this. Let me connect you with the department staff for confirmation."
-5. **Truthfulness**: Never invent policies, numbers, or facts. Stick to retrieved documents + college knowledge. 
-6. **No Follow-up Spam**: Do not ask the student for clarifications unless the query is completely ambiguous. 
-7. **Multilingual Mode**: Detect the student’s input language. Reply in the same language unless requested otherwise. 
-8. **Tone**: Helpful, approachable, respectful—like a senior guide or mentor. Friendly, never robotic.
-
-📚 CONTEXT
-Conversation so far:
-{conversation}
-
-Relevant verified college documents:
-{context_snippets}
+🔥 IMPORTANT RULE:
+🚫 Do NOT explain your reasoning, steps, or options. 
+🚫 Do NOT output fallback apologies in multiple languages. 
+✅ Only give the final assistant reply, short and confident.
 
 🎯 TASK
 Student has asked: "{payload.message}"
 
-Now, as the **College Assistant**, give the BEST possible reply following all directives above.
-
-Assistant:
+Reply in the same language as the student, with a short, friendly assistant message.
 """
 
     start = time.time()
@@ -323,14 +458,97 @@ Assistant:
         sources=[{"source": d.metadata.get("source")} for d in approved],
         elapsed_seconds=round(elapsed, 3)
     )
+
+
 @app.post("/chat_stream")
-async def chat_stream(payload: ChatRequest = Body(...)):
-    query = payload.message
-    context_prompt = f"""
-    You are a multilingual college assistant.
-    Department: {payload.department}
-    Student query: {query}
+async def chat_stream(payload: ChatRequest = Body(...), request: Request = None):
+    query = payload.message.strip()
+
+    # --- Detect reminder intent with Gemini ---
+    intent_prompt = f"""
+    Determine if this student query is asking to set a reminder.
+    Query: "{query}"
+
+    Respond ONLY with one word: "reminder" or "normal".
     """
+    intent = (await run_gemini(intent_prompt)).strip().lower()
+
+    # --- Handle reminder intent ---
+    if "reminder" in intent:
+        # ✅ Extract token from headers
+        auth_header = request.headers.get("authorization") if request else None
+        token = auth_header.split(" ")[1] if auth_header else None
+
+        if not token:
+            def event_stream():
+                yield json.dumps({"type": "token", "text": "⚠️ Missing token, cannot set reminder."}) + "\n"
+                yield json.dumps({"type": "done"}) + "\n"
+            return StreamingResponse(event_stream(), media_type="application/json")
+
+        # Lookup user email
+        to_email = await get_user_email("default", token)
+        if not to_email:
+            def event_stream():
+                yield json.dumps({"type": "token", "text": "⚠️ Could not find your email in the system."}) + "\n"
+                yield json.dumps({"type": "done"}) + "\n"
+            return StreamingResponse(event_stream(), media_type="application/json")
+
+        # Ask Gemini to draft email
+        reminder_prompt = f"""
+        You are an assistant that creates reminder emails.
+
+        The student asked: "{query}"
+
+        Task:
+        - Detect what they want to be reminded about.
+        - Write a short, polite email as the College Assistant.
+        - Tone: professional but friendly.
+        - Include emojis if suitable.
+        - Respond only with the email body text, no explanations.
+        """
+        email_body = await run_gemini(reminder_prompt)
+
+        subject = "📌 College Assistant Reminder"
+        body = f"""
+Hello,
+
+{email_body.strip()}
+
+Best regards,  
+College Assistant Bot
+        """
+
+        try:
+            send_email(to_email, subject, body)
+            log_activity(f"📧 Reminder email sent to {to_email}")
+            def event_stream():
+                yield json.dumps({"type": "status", "message": "📧 Reminder email sent"}) + "\n"
+                yield json.dumps({"type": "token", "text": f"✅ Reminder set! Email sent to {to_email}."}) + "\n"
+                yield json.dumps({"type": "done"}) + "\n"
+            return StreamingResponse(event_stream(), media_type="application/json")
+        except Exception as e:
+            err = str(e)
+            print("❌ send_email failed:", err)
+            def event_stream():
+                yield json.dumps({"type": "status", "message": "❌ Email failed"}) + "\n"
+                yield json.dumps({"type": "token", "text": f"Couldn’t send the reminder email: {err}"}) + "\n"
+                yield json.dumps({"type": "done"}) + "\n"
+            return StreamingResponse(event_stream(), media_type="application/json")
+
+
+    # --- Normal streaming RAG flow ---
+    context_prompt = f"""
+You are a multilingual college assistant for the {payload.department} department. 
+Student query: "{query}"
+
+🔥 IMPORTANT RULE:
+🚫 Do NOT explain your reasoning, steps, or options. 
+🚫 Do NOT output fallback apologies in multiple languages. 
+✅ Only give the final assistant reply, short and confident.
+
+Only return the assistant’s reply text.
+Do not include reasoning, analysis, or options.
+"""
 
     def event_stream():
         retriever = _vectorstore.as_retriever(search_kwargs={"k": payload.k or DEFAULT_K})
@@ -351,6 +569,41 @@ async def chat_stream(payload: ChatRequest = Body(...)):
         yield json.dumps({"type": "done"}) + "\n"
 
     return StreamingResponse(event_stream(), media_type="application/json")
+
+@app.post("/set_reminder")
+async def set_reminder(
+    user_id: str = "default",
+    background_tasks: BackgroundTasks = None,
+    token: str = Body(..., embed=True)  # frontend must send {"token": "..."}
+):
+    """
+    Manually set a reminder for a student.
+    Looks up user email from Express service and sends email.
+    """
+
+    # Lookup user email from Express Auth service
+    to_email = await get_user_email(user_id, token)
+    if not to_email:
+        raise HTTPException(status_code=404, detail="User email not found")
+
+    subject = "📌 College Assistant Reminder"
+    body = f"""
+Hello {user_id},
+
+This is your reminder from the College Assistant.
+You asked me to remind you about something — consider this your nudge 😊.
+
+Best regards,
+College Assistant Bot
+    """
+
+    if background_tasks:
+        background_tasks.add_task(send_email, to_email, subject, body)
+    else:
+        send_email(to_email, subject, body)
+
+    log_activity(f"📧 Manual reminder email sent to {to_email}")
+    return {"message": f"✅ Reminder set and email sent to {to_email}"}
 
 @app.post("/admin_chat", response_model=ChatResponse)
 async def admin_chat(payload: ChatRequest = Body(...)):

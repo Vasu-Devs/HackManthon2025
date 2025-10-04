@@ -1,234 +1,400 @@
-# HackManthon2025
+# College Assistant - AI-Powered RAG System
 
-A comprehensive AI-powered application with FastAPI backend and modern React frontend.
+A comprehensive college assistant application built with React frontend, Node.js authentication service, and FastAPI AI backend with RAG (Retrieval-Augmented Generation) capabilities.
 
-## 📋 Table of Contents
+## 🎥 Live Demo
 
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)  
-- [Setup Instructions](#setup-instructions)
-- [Backend AI Setup](#backend-ai-setup)
-- [Frontend Setup](#frontend-setup)
-- [Usage](#usage)
-- [Contributing](#contributing)
 
-## 🏗️ Project Structure
+Watch our comprehensive demo showcasing the College Assistant's features:
+
+[![Watch the demo](https://img.youtube.com/vi/n8PQeQOOO1o/0.jpg)](https://youtu.be/n8PQeQOOO1o)
+
+*📹 Full system demonstration showing AI chat, document management, and admin features*
+
+A comprehensive college assistant application built with React frontend, Node.js authentication service, and FastAPI AI backend with RAG (Retrieval-Augmented Generation) capabilities.
+
+## � Demo Video
+
+### 🎬 What's Covered in the Demo:
+- **🔐 Authentication Flow** - Student and admin login systems with role-based access
+- **💬 AI Chat Interface** - Real-time streaming responses with document retrieval context
+- **📄 Document Management** - Upload, process, and approve PDF documents with vector embeddings
+- **📊 Admin Dashboard** - Upload analytics, document management, and system monitoring
+- **� Analytics Dashboard** - Visual charts and statistics using Recharts
+- **� Verification Interface** - Document testing and validation system
+
+## �🏗️ Project Architecture
 
 ```
-HackManthon2025/
-├── backend-ai/          # AI backend service with FastAPI
-│   ├── app.py          # Main application file
-│   ├── requirements.txt # Python dependencies
-│   └── .env            # Environment variables
-├── frontend/           # React frontend application
-│   ├── src/           # Source code
-│   ├── package.json   # Node.js dependencies
-│   └── vite.config.js # Vite configuration
-├── data/              # Data files and documents
-└── README.md          # This file
+e:\GFG\
+├── frontend/          # React 19 + Vite 6 frontend (Port 5173)
+├── Auth/             # Express + MongoDB authentication service (Port 4000)
+└── backend-ai/       # FastAPI + AI/RAG backend (Port 8000)
 ```
 
-## 🔧 Prerequisites
+## 🚀 Current Features
 
-Before setting up this project, ensure you have the following installed:
+### 🤖 AI Chat Assistant
+- **Streaming chat responses** via `/chat_stream` endpoint with Google Gemini 2.0 Flash
+- **RAG (Retrieval-Augmented Generation)** with real-time document context display
+- **Voice chat support** via `/voice_chat` endpoint with microphone integration
+- **Department-specific responses** with user context
+- **Real-time thinking process** showing document retrieval and processing steps
 
-- **Python 3.12+** (for backend-ai)
-- **Node.js 16+** and **npm** (for frontend)
-- **Git** (for version control)
-- **CUDA-capable GPU** (optional but recommended for faster embeddings)
+### 📄 Document Management System
+- **Async PDF upload** via `/upload_pdf_async` with real-time progress tracking
+- **Document approval workflow** via `/approve_doc/{filename}` (processing → verified)
+- **Vector database storage** using ChromaDB + Ollama nomic-embed-text embeddings
+- **Document CRUD operations** (upload, download via `/get_file/{filename}`, delete)
+- **Status monitoring** with processing states and chunk information
 
-### Installing PyTorch with CUDA Support
+### 👥 Authentication & Authorization
+- **JWT-based authentication** with Express + MongoDB
+- **Role-based access control** (user/admin) with protected routes
+- **bcryptjs password hashing** for secure storage
+- **CORS-enabled** frontend-backend communication
+- **Login/logout** with localStorage token management
 
-For optimal performance with AI embeddings and GPU acceleration:
+### 📊 Admin Dashboard Features
+- **Real-time upload analytics** with progress monitoring
+- **System activity logs** via `/logs` endpoint (refreshes every 5s)
+- **Document approval interface** with status management
+- **File drag-and-drop upload** with validation
 
-1. **Check CUDA Version**: Run `nvidia-smi` to check your CUDA version
-2. **Install PyTorch with CUDA 12.1**: The setup instructions below include the correct PyTorch installation
-3. **Verify GPU**: The application will automatically detect and use GPU if available
+### 🎯 Analytics Dashboard
+- **Visual charts** using Recharts (Pie, Line, Bar charts)
+- **Real-time data visualization** with responsive design
+- **Navigation integration** between dashboard components
 
-## 🚀 Setup Instructions
+### 🔍 Verification Interface
+- **Document testing and validation** system
+- **Admin-only access** for system verification
 
-### 1. Fork and Clone the Repository
+## 🛠️ Tech Stack
 
+### Frontend (React 19 + Vite 6)
+- **React 19.1.1** with modern hooks and JSX transforms
+- **Vite 6** for fast development and HMR
+- **Tailwind CSS 4.1.13** for utility-first styling
+- **React Router DOM 7.9.2** for client-side routing
+- **Lucide React 0.544.0** for modern SVG icons
+- **React Markdown 10.1.0** with GitHub Flavored Markdown support
+- **Framer Motion 12.23.21** for smooth animations
+- **Recharts 3.2.1** for data visualization
+- **Axios 1.12.2** for HTTP requests
+- **JWT Decode 4.0.0** for token handling
+
+### Authentication Service (Express + MongoDB)
+- **Express 5.1.0** web framework
+- **MongoDB + Mongoose 8.18.2** for user data storage
+- **JWT (jsonwebtoken 9.0.2)** for token-based authentication
+- **bcryptjs 3.0.2** for password hashing
+- **Winston 3.17.0** for structured logging
+- **CORS 2.8.5** for cross-origin requests
+
+### AI Backend (FastAPI + LangChain)
+- **FastAPI** with uvicorn for async Python API
+- **Google Generative AI SDK** for Gemini 2.0 Flash responses
+- **ChromaDB** for persistent vector database storage
+- **Ollama** with nomic-embed-text model for embeddings
+- **LangChain Community** for document processing and retrieval
+- **pdfplumber + PyPDF2** for PDF text extraction
+- **Python Multipart** for file upload handling
+- **PyPDF2 & pdfplumber** for PDF text extraction
+- **Python 3.8+** runtime
+
+## 📋 Prerequisites
+
+Before running the application, ensure you have:
+
+- **Node.js** (v16 or higher)
+- **Python** (3.8 or higher)
+- **MongoDB** (local or cloud instance)
+- **Ollama** installed with `nomic-embed-text` model
+- **Google API Key** for Gemini 2.0 Flash
+
+### Install Ollama and Model
 ```bash
-# Fork the repository on GitHub first, then clone your fork
-git clone https://github.com/YOUR_USERNAME/HackManthon2025.git
-cd HackManthon2025
+# Install Ollama (Windows/Mac/Linux)
+# Visit: https://ollama.ai/download
+
+# Pull the required embedding model
+ollama pull nomic-embed-text
 ```
 
-### 2. Backend AI Setup
+## 🚀 Quick Start
 
-#### Step 1: Navigate to Backend Directory
+### 1. Clone and Setup
+```bash
+git clone <repository-url>
+cd GFG
+```
+
+### 2. Authentication Service Setup
+```bash
+cd Auth
+npm install
+
+# Create .env file
+echo "MONGODB_URI=mongodb://localhost:27017/college_assistant
+JWT_SECRET=your_super_secret_jwt_key_here
+PORT=4000" > .env
+
+# Start the auth service
+npm start
+```
+
+### 3. FastAPI Backend Setup
 ```bash
 cd backend-ai
-```
 
-#### Step 2: Create Virtual Environment with Python 3.12
-```bash
-# If you have multiple Python versions installed
-py -3.12 -m venv venv
-# Or use the default Python
+# Create and activate virtual environment
 python -m venv venv
-```
+.\venv\Scripts\Activate  # Windows
+# source venv/bin/activate  # Linux/Mac
 
-#### Step 3: Activate Virtual Environment
-
-**On Windows:**
-```bash
-./venv/Scripts/Activate
-```
-
-**On macOS/Linux:**
-```bash
-source venv/bin/activate
-```
-
-#### Step 4: Install Dependencies with GPU Support
-```bash
-# First, install PyTorch with CUDA 12.1 support
-pip uninstall torch -y
-pip install torch --index-url https://download.pytorch.org/whl/cu121
-
-# Then install all other dependencies
+# Install dependencies
 pip install -r requirements.txt
+
+# Create .env file
+echo "GOOGLE_API_KEY=your_google_gemini_api_key
+PERSIST_DIR=./chroma_db
+DEFAULT_K=5
+CHUNK_SIZE=800
+CHUNK_OVERLAP=100" > .env
+
+# Start FastAPI server
+python app.py
 ```
 
-#### Step 5: Download Embedding Model
-The application uses **BAAI/bge-m3** embedding model from HuggingFace which will download automatically (~2GB) on first run.
-
-#### Step 6: Environment Configuration
-1. Create a `.env` file in the `backend-ai` directory
-2. Add your Google API key:
-```env
-GOOGLE_API_KEY=your_google_api_key_here
-```
-
-#### Step 7: Run the Backend Server
+### 4. Frontend Setup
 ```bash
-# Make sure you're in the backend-ai directory and venv is activated
-uvicorn app:app --reload
-```
-
-**Note**: On first run, the HuggingFace BGE-M3 embedding model will be automatically downloaded (~2GB). This may take several minutes depending on your internet connection.
-
-The backend server should now be running on `http://localhost:8000`
-
-### 3. Frontend Setup
-
-#### Step 1: Navigate to Frontend Directory
-```bash
-# From the root directory
 cd frontend
-```
-
-#### Step 2: Install Node.js Dependencies
-```bash
 npm install
-```
 
-#### Step 3: Start Development Server
-```bash
+# Start development server
 npm run dev
 ```
 
-The frontend application should now be running on `http://localhost:5173`
+## 🌐 Application URLs
 
-## 🎯 Usage
+- **Frontend**: http://localhost:5173
+- **Auth Service**: http://localhost:4000
+- **FastAPI Backend**: http://localhost:8000
+- **FastAPI Docs**: http://localhost:8000/docs
 
-1. **Start the Backend**: Ensure the backend-ai server is running (Step 2.7 above)
-2. **Start the Frontend**: Ensure the frontend development server is running (Step 3.3 above)  
-3. **Access the Application**: Open your browser and navigate to `http://localhost:5173`
+## 📚 API Documentation
 
-## 📝 API Documentation
+### Authentication Endpoints (Port 4000)
+- `POST /auth/register` - Register new user with role assignment
+- `POST /auth/login` - User login with JWT token generation
+- Protected routes via JWT middleware
 
-Once the backend is running, you can access the interactive API documentation at:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-
-## 🧠 AI Models & Technology
-
-### Embedding Model: BAAI/BGE-M3
-- **Model**: `BAAI/bge-m3` from HuggingFace
-- **Type**: Multilingual embedding model with excellent semantic understanding
-- **Size**: ~2GB (downloads automatically on first run)
-- **Features**: 
-  - Supports multiple languages
-  - High-quality semantic embeddings for RAG
-  - GPU acceleration with CUDA 12.1 support
-  - Automatic fallback to CPU if GPU unavailable
-
-### Language Model: Google Gemini 2.0 Flash
-- **Model**: `gemini-2.0-flash`
-- **Provider**: Google AI
-- **Features**: Fast, efficient responses with excellent reasoning capabilities
+### FastAPI Endpoints (Port 8000)
+- `GET /health` - Backend health check with vectorstore status
+- `POST /chat` - Regular chat with AI (non-streaming)
+- `POST /chat_stream` - **Streaming chat responses** with real-time tokens
+- `POST /admin_chat` - Admin-specific chat interface
+- `POST /voice_chat` - Voice-to-voice interaction
+- `POST /upload_pdf_async` - **Async PDF upload** with progress tracking
+- `GET /upload_status/{upload_id}` - Check upload progress status
+- `POST /approve_doc/{filename}` - Approve document for vectorstore
+- `GET /documents` - List all uploaded documents with metadata
+- `POST /test_retrieval` - Test document retrieval functionality
+- `GET /recent_activities` - Get recent system activities
+- `GET /logs` - System logs for monitoring (refreshed every 5s)
+- `GET /get_file/{filename}` - Download uploaded documents
 
 ## 🔧 Development
 
-### Backend Development
-- The backend uses **FastAPI** with **LangChain** for AI operations
-- **ChromaDB** for vector database functionality
-- **HuggingFace BGE-M3** embeddings for semantic search and RAG
-- **Google Gemini 2.0 Flash** for AI chat responses
-- **PyTorch with CUDA 12.1** for efficient GPU-accelerated inference
-
 ### Frontend Development
-- Built with **React** and **Vite**
-- Modern JavaScript/TypeScript development
-- Hot module replacement for fast development
+```bash
+cd frontend
+npm run dev      # Start dev server
+npm run build    # Build for production
+npm run lint     # Run ESLint
+npm run preview  # Preview production build
+```
 
-## 🛠️ Troubleshooting
+### Backend Development
+```bash
+cd backend-ai
+python app.py   # Start with auto-reload
+```
+
+### Auth Service Development
+```bash
+cd Auth
+npm run dev     # Start with nodemon (if configured)
+npm start       # Start production server
+```
+
+## 📁 Project Structure
+
+### Frontend Structure & Routing
+```
+frontend/src/
+├── components/          # React components
+│   ├── App.jsx                 # Main router with 6 routes
+│   ├── LandingPage.jsx         # "/" - Landing page
+│   ├── DashboardLayout.jsx     # "/dashboard" - Admin dashboard
+│   ├── ChatInterface.jsx       # "/chat" - AI chat interface
+│   ├── Analytics.jsx           # "/analytics" - Analytics dashboard
+│   ├── DocumentsList.jsx       # "/policies" - Document management
+│   ├── VerificationInterface.jsx # "/verification" - Testing interface
+│   ├── Hero.jsx                # Landing page hero section
+│   ├── FeatureCards.jsx        # Feature showcase cards
+│   ├── Dashboard.jsx           # Dashboard subcomponent
+│   ├── Signup.jsx              # Auth modal component
+│   ├── StudentBlackPanel.jsx   # Student auth panel
+│   ├── AdminBlackPanel.jsx     # Admin auth panel
+│   ├── StudentWhitePanel.jsx   # Student login form
+│   ├── AdminWhitePanel.jsx     # Admin login form
+│   ├── LanguageSwitcher.jsx    # Language selector
+│   └── Footer.jsx              # Footer component
+├── services/           # API service layer (created but commented out)
+│   └── api.js         # FastAPI integration utilities
+├── config/            # Configuration files  
+│   └── api.js        # API endpoints configuration
+├── assets/            # Static assets (React logo)
+└── icons/            # SVG icons for UI
+```
+
+### Backend Structure
+```
+backend-ai/
+├── app.py                    # FastAPI main application with 12 endpoints
+├── requirements.txt          # Python dependencies (26 packages)
+├── .env                     # Environment variables configuration
+├── chroma_db/               # ChromaDB vector database persistence
+├── temp_md/                 # Temporary markdown processing directory
+├── uploaded_docs/           # Permanent PDF document storage
+├── chat_logs.csv           # Chat interaction logging
+└── venv/                   # Python virtual environment
+
+Auth/
+├── index.js                 # Express server with MongoDB connection
+├── package.json            # Node.js dependencies (8 packages)
+├── .env                    # MongoDB URI and JWT secret
+├── models/                 # Mongoose user models
+├── routes/                 # Authentication and API routes
+├── middleware/             # JWT and logging middleware
+├── logs/                   # Winston structured logs
+└── utils/                  # Utility functions
+```
+
+## 🔐 Environment Variables
+
+### Auth Service (.env)
+```env
+MONGODB_URI=mongodb://localhost:27017/college_assistant
+JWT_SECRET=your_jwt_secret_key
+PORT=4000
+```
+
+### FastAPI Backend (.env)
+```env
+GOOGLE_API_KEY=your_google_gemini_api_key
+PERSIST_DIR=./chroma_db
+DEFAULT_K=5
+CHUNK_SIZE=800
+CHUNK_OVERLAP=100
+TEMP_MD_DIR=./temp_md
+BATCH_SIZE=20
+```
+
+## 📋 Current Implementation Status
+
+### ✅ Fully Implemented Features
+- **Frontend Routes**: 6 main routes with React Router DOM
+- **Authentication System**: Complete JWT-based auth with MongoDB
+- **AI Chat Interface**: Streaming responses with real-time document context
+- **Document Management**: Upload, process, approve, delete workflows
+- **Admin Dashboard**: File upload with drag-and-drop, progress tracking
+- **Analytics Dashboard**: Charts and visualizations with Recharts
+- **Vector Database**: ChromaDB with Ollama embeddings for RAG
+- **API Integration**: Direct fetch calls to FastAPI (service layer exists but not active)
+
+### 🔧 Service Layer Status
+- **Created but Inactive**: `src/services/api.js` and `src/config/api.js` exist
+- **Current Approach**: Components use direct `fetch()` calls to `http://127.0.0.1:8000/*`
+- **Reason**: Service layer imports caused build issues, temporarily disabled
+- **Future**: Service layer ready for re-integration when build issues resolved
+
+### 🎯 Key Working Features
+- **Real-time Streaming**: `/chat_stream` endpoint with token-by-token responses
+- **Document Processing**: Async upload with chunking progress display  
+- **Role-based Access**: Admin vs User routing and permissions
+- **Voice Integration**: `/voice_chat` endpoint for audio interactions
+- **System Monitoring**: Live activity logs refreshing every 5 seconds
+- **Responsive Design**: Works across desktop, tablet, and mobile devices
+
+## 🧪 Testing
+
+### Test Authentication
+```bash
+curl -X POST http://localhost:4000/auth/health
+```
+
+### Test FastAPI Backend
+```bash
+curl -X GET http://localhost:8000/health
+```
+
+### Test Document Upload
+1. Navigate to http://localhost:5173/dashboard
+2. Upload a PDF file
+3. Monitor processing in real-time
+
+## 📈 Monitoring & Logs
+
+- **Auth Service Logs**: `Auth/logs/app.log`
+- **FastAPI Logs**: Console output with structured logging
+- **Chat Logs**: `backend-ai/chat_logs.csv` with Gemini-powered analytics
+- **Activity Monitoring**: Real-time activities in dashboard
+
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **Virtual Environment Activation Issues**
-   - On Windows, if `./venv/Scripts/Activate` doesn't work, try: `venv\Scripts\activate.bat`
-   - Ensure you're in the `backend-ai` directory
-   - Make sure you're using Python 3.12+ with `py -3.12 -m venv venv`
+1. **White Screen on Frontend**
+   - Check browser console for JavaScript errors
+   - Ensure all services are running
+   - Verify API endpoints are accessible
 
-2. **PyTorch/CUDA Installation Issues**
-   - Verify CUDA version with `nvidia-smi`
-   - Reinstall PyTorch with correct CUDA version:
-     ```bash
-     pip uninstall torch -y
-     pip install torch --index-url https://download.pytorch.org/whl/cu121
-     ```
-   - Check GPU detection in the application logs
+2. **FastAPI Import Errors**
+   - Ensure virtual environment is activated
+   - Install requirements: `pip install -r requirements.txt`
 
-3. **Embedding Model Download Issues**
-   - Ensure you have a stable internet connection for the initial model download
-   - The BGE-M3 model (~2GB) downloads automatically from HuggingFace
-   - If download fails, delete the model cache and restart: check `~/.cache/huggingface/` directory
-   - For GPU issues, ensure PyTorch is properly installed with CUDA support
+3. **Auth Service Connection Issues**
+   - Check MongoDB is running
+   - Verify MongoDB URI in .env
 
-4. **Port Conflicts**
-   - Backend default port: 8000
-   - Frontend default port: 5173
-   - Change ports in configuration files if needed
+4. **Vector Database Issues**
+   - Ensure Ollama is running
+   - Pull required model: `ollama pull nomic-embed-text`
 
-5. **Dependencies Installation Issues**
-   - For Python: Make sure virtual environment is activated and using Python 3.12+
-   - For Node.js: Delete `node_modules` and `package-lock.json`, then run `npm install` again
+### Port Conflicts
+If ports are occupied, update the following:
+- Auth Service: Change `PORT` in `.env`
+- FastAPI: Update `port` in `app.py`
+- Frontend: Update `vite.config.js`
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make changes and test thoroughly
+4. Submit a pull request
 
 ## 📄 License
 
-This project is part of HackManthon2025. Please check with the organizers for licensing information.
+This project is licensed under the MIT License.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-If you encounter any issues during setup:
-1. Check the troubleshooting section above
-2. Ensure all prerequisites are properly installed
-3. Verify that all steps were followed in order
-4. Make sure you're using Python 3.12+ and PyTorch with CUDA 12.1
-5. Create an issue on GitHub with detailed error messages
-
----
-
-**Happy Hacking! 🚀**
+- **Google Gemini** for AI responses
+- **Ollama** for local embeddings
+- **ChromaDB** for vector storage
+- **FastAPI** for high-performance backend
+- **React** ecosystem for frontend
